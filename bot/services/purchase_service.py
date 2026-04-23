@@ -35,7 +35,7 @@ class PurchaseService:
             }
 
         total_price = provider.price_per_unit * amount_gb * duration_months
-        balance = self.wallet.get_balance(user.wallet_address)
+        balance = await self.wallet.get_balance(user.wallet_address)
 
         if balance < total_price:
             return {
@@ -50,7 +50,7 @@ class PurchaseService:
         # Send payment on-chain
         try:
             pk = self.wallet.get_private_key(user)
-            tx_hash = self.wallet.send_transaction(
+            tx_hash = await self.wallet.send_transaction(
                 pk, provider.address, total_price
             )
         except Exception as e:
@@ -100,7 +100,7 @@ class PurchaseService:
             }
 
         total_price = provider.price_per_unit * vcpu_hours
-        balance = self.wallet.get_balance(user.wallet_address)
+        balance = await self.wallet.get_balance(user.wallet_address)
 
         if balance < total_price:
             return {
@@ -114,7 +114,7 @@ class PurchaseService:
 
         try:
             pk = self.wallet.get_private_key(user)
-            tx_hash = self.wallet.send_transaction(
+            tx_hash = await self.wallet.send_transaction(
                 pk, provider.address, total_price
             )
         except Exception as e:

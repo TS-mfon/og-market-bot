@@ -56,7 +56,7 @@ class ResourceManager:
             return {"success": False, "error": "Provider no longer available."}
 
         renew_price = provider.price_per_unit * resource.amount
-        balance = self.wallet.get_balance(user.wallet_address)
+        balance = await self.wallet.get_balance(user.wallet_address)
 
         if balance < renew_price:
             return {
@@ -70,7 +70,7 @@ class ResourceManager:
 
         try:
             pk = self.wallet.get_private_key(user)
-            tx_hash = self.wallet.send_transaction(
+            tx_hash = await self.wallet.send_transaction(
                 pk, provider.address, renew_price
             )
         except Exception as e:
