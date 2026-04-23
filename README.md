@@ -1,61 +1,63 @@
-# 0G Market Bot
+# OG Market Bot — 0G Mainnet Compute & Storage Marketplace
 
-Telegram marketplace bot for 0G compute and storage resources.
+A production-grade Telegram bot for buying decentralized compute and storage on 0G Network mainnet (chain ID 480).
 
 ## Features
 
-- Browse storage and compute providers on the 0G network
-- Compare providers side-by-side with formatted tables
-- Purchase storage and compute resources via embedded wallets
-- Upload and download files to/from 0G storage
-- Track job status for compute workloads
-- Monitor earnings for node operators
-- Estimate costs for workloads using natural language descriptions
+### Providers
+- `/storage_providers` — List active storage providers with live chain metrics
+- `/compute_providers` — List compute providers
+- `/compare` — Side-by-side provider comparison
+
+### Purchase
+- `/buy_storage <provider_id> <gb> <months>` — Buy storage (real on-chain tx)
+- `/buy_compute <provider_id> <hours>` — Buy compute
+- `/estimate <description>` — Cost estimator
+
+### Resources
+- `/my_resources` — Your active purchases
+- `/renew <resource_id>` — Renew a resource
+- `/cancel <resource_id>` — Cancel
+
+### Files
+- `/upload` — Upload to 0G Storage (real indexer POST)
+- `/files` — List uploaded files
+
+### Jobs
+- `/job_status <job_id>` — On-chain status check
+
+### Operators
+- `/earnings` — View node earnings
+- `/earnings register <address>` — Register as operator
+
+## Production Features
+
+- Real on-chain purchases with balance check + receipt polling
+- Async/await throughout (all web3 calls wrapped in `asyncio.to_thread`)
+- Live provider data (chain activity determines active/inactive)
+- Auto-renewal via APScheduler
+- Incoming tx notifications for operators
+- Rate limiting
+- Structured JSON logging
+- Multi-stage Docker build with non-root user
+- Fernet-encrypted private keys
 
 ## Setup
 
-1. Install dependencies:
 ```bash
+cp .env.example .env
+python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 pip install -r requirements.txt
-```
-
-2. Configure `.env`:
-```
-TELEGRAM_BOT_TOKEN=<your-bot-token>
-OG_RPC_URL=https://evmrpc-testnet.0g.ai
-OG_STORAGE_INDEXER=https://indexer-storage-testnet-turbo.0g.ai
-OG_COMPUTE_API=https://compute-testnet.0g.ai
-WALLET_ENCRYPTION_KEY=<generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())">
-```
-
-3. Run:
-```bash
 python -m bot.main
 ```
 
-## Docker
+## Deploy to Render
 
-```bash
-docker build -t og-market-bot .
-docker run --env-file .env og-market-bot
-```
+1. Create Web Service from this repo
+2. Docker runtime
+3. Set env vars from `.env.example`
+4. Deploy
 
-## Commands
+## License
 
-| Command | Description |
-|---|---|
-| `/start` | Welcome message and overview |
-| `/help` | List all commands |
-| `/storage_providers` | Browse storage providers |
-| `/compute_providers` | Browse compute providers |
-| `/buy_storage` | Purchase storage capacity |
-| `/buy_compute` | Purchase compute resources |
-| `/my_resources` | View your active resources |
-| `/renew` | Renew a resource subscription |
-| `/cancel` | Cancel a resource |
-| `/upload` | Upload a file to 0G storage |
-| `/files` | List your uploaded files |
-| `/job_status` | Check compute job status |
-| `/earnings` | View node operator earnings |
-| `/compare` | Compare providers side-by-side |
-| `/estimate` | Estimate cost for a workload |
+MIT
