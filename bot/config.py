@@ -29,6 +29,7 @@ class Config:
     OG_MARKET_COMPUTE_ROUTE: str = os.getenv(
         "OG_MARKET_COMPUTE_ROUTE", "0g-compute-mainnet-route"
     )
+    WEBHOOK_BASE_URL: str = os.getenv("WEBHOOK_BASE_URL", "")
 
 
 config = Config()

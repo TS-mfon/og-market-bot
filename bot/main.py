@@ -2,8 +2,6 @@
 
 import logging
 import os
-import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from telegram import BotCommand
 from telegram.ext import Application
@@ -33,20 +31,8 @@ async def post_shutdown(application: Application) -> None:
     logger.info("Database closed")
 
 
-class HealthHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b'{"status":"ok","bot":"og-market"}')
-
-    def log_message(self, *args):
-        pass  # suppress
-
-
-def start_health_server():
-    port = int(os.environ.get("PORT", 10000))
-    server = HTTPServer(("0.0.0.0", port), HealthHandler)
-    server.serve_forever()
+def _webhook_base_url() -> str:
+    return config.WEBHOOK_BASE_URL.strip() or os.environ.get("RENDER_EXTERNAL_URL", "").strip()
 
 
 def main() -> None:
@@ -67,10 +53,21 @@ def main() -> None:
     register_all_handlers(app, db)
 
     logger.info("Starting 0G Market Bot...")
+    webhook_base = _webhook_base_url()
+    if webhook_base:
+        token = config.TELEGRAM_BOT_TOKEN
+        url_path = f"/telegram/{token}"
+        app.run_webhook(
+            listen="0.0.0.0",
+            port=int(os.environ.get("PORT", "10000")),
+            url_path=url_path,
+            webhook_url=f"{webhook_base}{url_path}",
+            drop_pending_updates=True,
+        )
+        return
+
     app.run_polling(drop_pending_updates=True)
 
 
 if __name__ == "__main__":
-    # Start health server BEFORE main (which blocks on polling)
-    threading.Thread(target=start_health_server, daemon=True).start()
     main()
