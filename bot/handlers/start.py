@@ -8,8 +8,10 @@ BOT_COMMANDS = [
     ("start", "Create your wallet and show a quick overview"),
     ("commands", "List available bot commands"),
     ("help", "Show detailed usage help"),
+    ("stack", "Show the 0G mainnet stack used by this bot"),
     ("storage_providers", "Browse storage providers"),
     ("compute_providers", "Browse compute providers"),
+    ("compute_models", "List 0G Compute model catalog"),
     ("compare", "Compare providers side-by-side"),
     ("buy_storage", "Purchase storage capacity"),
     ("buy_compute", "Purchase compute capacity"),
@@ -27,8 +29,10 @@ Welcome to the 0G Market Bot!
 Your one-stop marketplace for 0G decentralized compute and storage.
 
 What you can do:
+  /stack             - Show the live 0G stack used by the bot
   /storage_providers - Browse storage providers
   /compute_providers - Browse compute providers
+  /compute_models    - View 0G Compute model catalog
   /compare           - Compare providers side-by-side
   /buy_storage       - Purchase storage
   /buy_compute       - Purchase compute
@@ -47,8 +51,10 @@ HELP_TEXT = """
 0G Market Bot - Commands
 
 BROWSING
+  /stack                    Show the live 0G stack used by the bot
   /storage_providers       List storage providers
   /compute_providers       List compute providers
+  /compute_models          List 0G Compute models
   /compare <id1> <id2>     Compare providers
 
 PURCHASING
@@ -82,8 +88,10 @@ COMMANDS_TEXT = """
 /start - Create your wallet and show a quick overview
 /commands - List available commands with short descriptions
 /help - Show detailed usage help
+/stack - Show the 0G mainnet stack used by this bot
 /storage_providers - List storage providers
 /compute_providers - List compute providers
+/compute_models - List the 0G Compute model catalog
 /compare <id1> <id2> - Compare providers
 /buy_storage <id> <GB> [months] - Buy storage from a provider
 /buy_compute <id> <hrs> - Buy compute from a provider

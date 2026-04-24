@@ -17,6 +17,17 @@ WORKDIR /app
 
 RUN useradd -m -u 1000 botuser
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    gnupg \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends nodejs \
+    && npm install -g @0glabs/0g-serving-broker \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /root/.local /home/botuser/.local
 COPY --chown=botuser:botuser . .
 

@@ -3,17 +3,60 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
+from web3 import Web3
+
+from bot.config import config
 from bot.db.database import Database
 from bot.models.resource import Resource
 from bot.services.wallet_service import WalletService
 
 logger = logging.getLogger(__name__)
 
+OG_MARKET_HUB_ABI = [
+    {
+        "inputs": [
+            {"internalType": "uint256", "name": "providerId", "type": "uint256"},
+            {"internalType": "uint256", "name": "amountGb", "type": "uint256"},
+            {"internalType": "uint256", "name": "durationMonths", "type": "uint256"},
+            {"internalType": "string", "name": "route", "type": "string"},
+        ],
+        "name": "buyStorage",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function",
+    },
+    {
+        "inputs": [
+            {"internalType": "uint256", "name": "providerId", "type": "uint256"},
+            {"internalType": "uint256", "name": "vcpuHours", "type": "uint256"},
+            {"internalType": "string", "name": "route", "type": "string"},
+        ],
+        "name": "buyCompute",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function",
+    },
+]
+
 
 class PurchaseService:
     def __init__(self, db: Database, wallet_service: WalletService):
         self.db = db
         self.wallet = wallet_service
+
+    def _hub_address(self) -> str:
+        return config.OG_MARKET_HUB_ADDRESS.strip()
+
+    def _encode_contract_call(self, function_name: str, args: list[object]) -> tuple[str, bytes]:
+        hub = self._hub_address()
+        if not hub:
+            raise ValueError("OG_MARKET_HUB_ADDRESS is not configured")
+        contract = self.wallet.w3.eth.contract(
+            address=Web3.to_checksum_address(hub),
+            abi=OG_MARKET_HUB_ABI,
+        )
+        data = contract.functions[function_name](*args)._encode_transaction_data()
+        return hub, Web3.to_bytes(hexstr=data)
 
     async def purchase_storage(
         self,
@@ -47,12 +90,18 @@ class PurchaseService:
                 ),
             }
 
-        # Send payment on-chain
         try:
             pk = self.wallet.get_private_key(user)
-            tx_hash = await self.wallet.send_transaction(
-                pk, provider.address, total_price
+            hub, data = self._encode_contract_call(
+                "buyStorage",
+                [
+                    int(provider_id),
+                    max(1, int(round(amount_gb))),
+                    max(1, int(duration_months)),
+                    config.OG_MARKET_STORAGE_ROUTE,
+                ],
             )
+            tx_hash = await self.wallet.send_transaction(pk, hub, total_price, data=data)
         except Exception as e:
             logger.error("Purchase tx failed: %s", e)
             return {"success": False, "error": f"Transaction failed: {e}"}
@@ -114,9 +163,15 @@ class PurchaseService:
 
         try:
             pk = self.wallet.get_private_key(user)
-            tx_hash = await self.wallet.send_transaction(
-                pk, provider.address, total_price
+            hub, data = self._encode_contract_call(
+                "buyCompute",
+                [
+                    int(provider_id),
+                    max(1, int(round(vcpu_hours))),
+                    config.OG_MARKET_COMPUTE_ROUTE,
+                ],
             )
+            tx_hash = await self.wallet.send_transaction(pk, hub, total_price, data=data)
         except Exception as e:
             logger.error("Purchase tx failed: %s", e)
             return {"success": False, "error": f"Transaction failed: {e}"}

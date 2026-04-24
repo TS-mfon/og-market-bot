@@ -114,33 +114,41 @@ class Database:
         cursor = await self._db.execute("SELECT COUNT(*) FROM providers")
         row = await cursor.fetchone()
         if row[0] > 0:
-            return
+            existing = await self.get_providers()
+            if existing and any(
+                p.name.startswith("0G Storage Alpha") or p.name.startswith("0G Compute Node-")
+                for p in existing
+            ):
+                await self._db.execute("DELETE FROM providers")
+                await self._db.commit()
+            else:
+                return
 
         seed_data = [
-            ("0G Storage Alpha", "storage", "0x1a2b3c4d5e6f7890abcdef1234567890abcdef01",
-             0.05, 10000.0, 3200.0, 99.95, "US-East", 4.8,
-             "https://storage-alpha.0g.ai"),
-            ("0G Storage Beta", "storage", "0x2b3c4d5e6f7890abcdef1234567890abcdef0102",
-             0.04, 50000.0, 18000.0, 99.8, "EU-West", 4.6,
-             "https://storage-beta.0g.ai"),
-            ("0G Storage Gamma", "storage", "0x3c4d5e6f7890abcdef1234567890abcdef010203",
-             0.06, 5000.0, 1200.0, 99.99, "Asia-SE", 4.9,
-             "https://storage-gamma.0g.ai"),
-            ("0G Storage Delta", "storage", "0x4d5e6f7890abcdef1234567890abcdef01020304",
-             0.035, 100000.0, 62000.0, 99.7, "US-West", 4.5,
-             "https://storage-delta.0g.ai"),
-            ("0G Compute Node-1", "compute", "0x5e6f7890abcdef1234567890abcdef0102030405",
-             0.12, 500.0, 180.0, 99.9, "US-East", 4.7,
-             "https://compute-1.0g.ai"),
-            ("0G Compute Node-2", "compute", "0x6f7890abcdef1234567890abcdef010203040506",
-             0.10, 1000.0, 420.0, 99.85, "EU-West", 4.8,
-             "https://compute-2.0g.ai"),
-            ("0G Compute Node-3", "compute", "0x7890abcdef1234567890abcdef01020304050607",
-             0.15, 200.0, 50.0, 99.95, "Asia-SE", 4.9,
-             "https://compute-3.0g.ai"),
-            ("0G Compute Node-4", "compute", "0x890abcdef1234567890abcdef0102030405060708",
-             0.08, 2000.0, 1100.0, 99.6, "US-West", 4.4,
-             "https://compute-4.0g.ai"),
+            (
+                "0G Storage Mainnet Route",
+                "storage",
+                config.OG_MARKET_HUB_ADDRESS or "0x0000000000000000000000000000000000000000",
+                0.05,
+                500000.0,
+                0.0,
+                99.95,
+                "Global",
+                5.0,
+                config.OG_STORAGE_INDEXER,
+            ),
+            (
+                "0G Compute Mainnet Route",
+                "compute",
+                config.OG_MARKET_HUB_ADDRESS or "0x0000000000000000000000000000000000000000",
+                0.12,
+                100000.0,
+                0.0,
+                99.90,
+                "Global",
+                5.0,
+                config.OG_COMPUTE_API,
+            ),
         ]
 
         for row in seed_data:
