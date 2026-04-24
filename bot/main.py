@@ -5,11 +5,13 @@ import os
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
+from telegram import BotCommand
 from telegram.ext import Application
 
 from bot.config import config
 from bot.db.database import Database
 from bot.handlers import register_all_handlers
+from bot.handlers.start import BOT_COMMANDS
 from bot.utils.logging_config import setup_logging
 
 setup_logging()
@@ -19,6 +21,9 @@ logger = logging.getLogger(__name__)
 async def post_init(application: Application) -> None:
     db: Database = application.bot_data["db"]
     await db.connect()
+    await application.bot.set_my_commands(
+        [BotCommand(command, description) for command, description in BOT_COMMANDS]
+    )
     logger.info("Database initialized")
 
 

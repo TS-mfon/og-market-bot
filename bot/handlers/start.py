@@ -4,6 +4,23 @@ from telegram.ext import CommandHandler, ContextTypes
 from bot.db.database import Database
 from bot.services.wallet_service import WalletService
 
+BOT_COMMANDS = [
+    ("start", "Create your wallet and show a quick overview"),
+    ("commands", "List available bot commands"),
+    ("help", "Show detailed usage help"),
+    ("storage_providers", "Browse storage providers"),
+    ("compute_providers", "Browse compute providers"),
+    ("compare", "Compare providers side-by-side"),
+    ("buy_storage", "Purchase storage capacity"),
+    ("buy_compute", "Purchase compute capacity"),
+    ("my_resources", "View active resources"),
+    ("upload", "Upload a file to 0G storage"),
+    ("files", "List your uploaded files"),
+    ("job_status", "Check compute jobs"),
+    ("earnings", "View node operator earnings"),
+    ("estimate", "Estimate workload cost"),
+]
+
 WELCOME_TEXT = """
 Welcome to the 0G Market Bot!
 
@@ -59,6 +76,27 @@ WALLET
   Fund it to make purchases on the 0G network.
 """.strip()
 
+COMMANDS_TEXT = """
+0G Market Bot - Available Commands
+
+/start - Create your wallet and show a quick overview
+/commands - List available commands with short descriptions
+/help - Show detailed usage help
+/storage_providers - List storage providers
+/compute_providers - List compute providers
+/compare <id1> <id2> - Compare providers
+/buy_storage <id> <GB> [months] - Buy storage from a provider
+/buy_compute <id> <hrs> - Buy compute from a provider
+/estimate <description> - Estimate workload cost
+/my_resources - View your active resources
+/renew <resource_id> - Renew a resource
+/cancel <resource_id> - Cancel a resource
+/upload - Upload a file to 0G storage
+/files - List uploaded files
+/job_status - Check compute job status
+/earnings - View node operator earnings
+""".strip()
+
 
 def register_start_handlers(app, db: Database):
     wallet_svc = WalletService(db)
@@ -68,7 +106,7 @@ def register_start_handlers(app, db: Database):
         user = await wallet_svc.get_or_create_user(
             tg_user.id, tg_user.username
         )
-        balance = wallet_svc.get_balance(user.wallet_address)
+        balance = await wallet_svc.get_balance(user.wallet_address)
         msg = (
             f"{WELCOME_TEXT}\n\n"
             f"Wallet: {user.wallet_address}\n"
@@ -76,8 +114,12 @@ def register_start_handlers(app, db: Database):
         )
         await update.message.reply_text(msg)
 
+    async def commands_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await update.message.reply_text(COMMANDS_TEXT)
+
     async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(HELP_TEXT)
 
     app.add_handler(CommandHandler("start", start_cmd))
+    app.add_handler(CommandHandler("commands", commands_cmd))
     app.add_handler(CommandHandler("help", help_cmd))
