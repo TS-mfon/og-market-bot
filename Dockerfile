@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get update \
     && apt-get install -y --no-install-recommends nodejs \
-    && npm install -g @0glabs/0g-serving-broker \
+    && npm install -g @0gfoundation/0g-compute-ts-sdk \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /root/.local /home/botuser/.local
