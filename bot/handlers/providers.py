@@ -11,7 +11,7 @@ from bot.services.og_compute_cli import (
     list_model_catalog,
 )
 from bot.services.provider_service import ProviderService
-from bot.utils.formatting import Formatter
+from bot.utils.formatting import Formatter, error_message
 
 
 def register_provider_handlers(app, db: Database):
@@ -47,7 +47,14 @@ def register_provider_handlers(app, db: Database):
             parts.append(f"0G Compute network\n\n<pre>{html.escape(network[:1200])}</pre>")
             parts.append(f"Live compute providers\n\n<pre>{html.escape(live[:2000])}</pre>")
         except Exception as exc:
-            parts.append(f"Live compute discovery unavailable right now: {exc}")
+            parts.append(
+                html.escape(
+                    error_message(
+                        str(exc),
+                        "The bot will still show its configured purchase routes below.",
+                    )
+                )
+            )
         text = "\n\n".join(parts) + "\n\nBot purchase routes\n\n"
         for p in providers:
             text += Formatter.provider_card(p) + "\n"
@@ -64,7 +71,9 @@ def register_provider_handlers(app, db: Database):
                 parse_mode="HTML",
             )
         except Exception as exc:
-            await update.message.reply_text(f"Could not load model catalog: {exc}")
+            await update.message.reply_text(
+                error_message(str(exc), "Run /stack to confirm the configured 0G Compute CLI network.")
+            )
 
     async def stack_cmd(
         update: Update, context: ContextTypes.DEFAULT_TYPE

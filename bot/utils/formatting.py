@@ -1,5 +1,23 @@
 from bot.models.provider import Provider
 from bot.models.resource import Resource
+from bot.utils.errors import classify_error, support_code
+
+
+def error_message(msg: str, hint: str | None = None) -> str:
+    """Plain-text guided error message for handlers that do not use HTML."""
+    error = RuntimeError(msg)
+    guide = classify_error(error)
+    lines = [
+        guide.title,
+        guide.explanation,
+        "",
+        "What to do next",
+    ]
+    lines.extend(f"- {step}" for step in guide.next_steps)
+    if hint:
+        lines.extend(["", f"Hint: {hint}"])
+    lines.extend(["", f"Support code: {support_code(error)}"])
+    return "\n".join(lines)
 
 
 class Formatter:
