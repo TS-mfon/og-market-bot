@@ -10,6 +10,7 @@ from bot.config import config
 from bot.db.database import Database
 from bot.handlers import register_all_handlers
 from bot.handlers.start import BOT_COMMANDS
+from bot.utils.errors import error_handler
 from bot.utils.logging_config import setup_logging
 
 setup_logging()
@@ -51,6 +52,7 @@ def main() -> None:
     app.bot_data["db"] = db
 
     register_all_handlers(app, db)
+    app.add_error_handler(error_handler)
 
     logger.info("Starting 0G Market Bot...")
     webhook_base = _webhook_base_url()
