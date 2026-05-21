@@ -30,6 +30,9 @@ class Config:
         "OG_MARKET_COMPUTE_ROUTE", "0g-compute-mainnet-route"
     )
     WEBHOOK_BASE_URL: str = os.getenv("WEBHOOK_BASE_URL", "")
+    RUNTIME_ORIGIN: str = os.getenv("RUNTIME_ORIGIN", "vps")
+    BACKEND_ROLE: str = os.getenv("BACKEND_ROLE", "primary")
+    REDIS_URL: str = os.getenv("REDIS_URL", "")
 
 
 config = Config()
